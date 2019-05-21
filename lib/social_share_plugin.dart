@@ -26,4 +26,12 @@ class SocialSharePlugin {
     });
     return Future.value();
   }
+
+  static Future<void> shareToWhatsapp(String caption, String path) async {
+    await _channel.invokeMethod('shareToWhatsapp', <String, dynamic>{
+      'caption': caption,
+      'path': path,
+    });
+    return Future.value();
+  }
 }
