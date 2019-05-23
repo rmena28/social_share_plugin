@@ -77,11 +77,7 @@ public class SocialSharePlugin implements MethodCallHandler {
 
       result.success(null);
     } else if (call.method.equals("share")) {
-      try {
-        share(call.<String>argument("caption"), call.<String>argument("path"));
-      } catch (PackageManager.NameNotFoundException e) {
-      }
-
+      share(call.<String>argument("caption"), call.<String>argument("path"));
       result.success(null);
     } else {
       result.notImplemented();
