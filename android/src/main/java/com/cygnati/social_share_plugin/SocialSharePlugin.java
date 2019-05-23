@@ -11,6 +11,7 @@ import com.facebook.share.model.ShareMediaContent;
 import com.facebook.share.model.SharePhoto;
 import com.facebook.share.model.SharePhotoContent;
 import com.facebook.share.widget.ShareDialog;
+
 import androidx.core.content.FileProvider;
 
 import java.io.File;
@@ -22,18 +23,22 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-/** SocialSharePlugin */
+/**
+ * SocialSharePlugin
+ */
 public class SocialSharePlugin implements MethodCallHandler {
-  private final static String INSTAGRAM_PACKAGE_NAME = "com.instagram.android" ;
-  private final static String WHATSAPP_PACKAGE_NAME = "com.whatsapp" ;
+  private final static String INSTAGRAM_PACKAGE_NAME = "com.instagram.android";
+  private final static String WHATSAPP_PACKAGE_NAME = "com.whatsapp";
   private final static String FACEBOOK_PACKAGE_NAME = "com.facebook.katana";
   private final Registrar registrar;
 
-  private SocialSharePlugin(Registrar registrar){
+  private SocialSharePlugin(Registrar registrar) {
     this.registrar = registrar;
   }
 
-  /** Plugin registration. */
+  /**
+   * Plugin registration.
+   */
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "social_share_plugin");
     channel.setMethodCallHandler(new SocialSharePlugin(registrar));
@@ -68,6 +73,13 @@ public class SocialSharePlugin implements MethodCallHandler {
         whatsappShare(call.<String>argument("caption"), call.<String>argument("path"));
       } catch (PackageManager.NameNotFoundException e) {
         openPlayStore(WHATSAPP_PACKAGE_NAME);
+      }
+
+      result.success(null);
+    } else if (call.method.equals("share")) {
+      try {
+        share(call.<String>argument("caption"), call.<String>argument("path"));
+      } catch (PackageManager.NameNotFoundException e) {
       }
 
       result.success(null);
@@ -123,6 +135,18 @@ public class SocialSharePlugin implements MethodCallHandler {
     share.putExtra(Intent.EXTRA_STREAM, fileUri);
     share.putExtra(Intent.EXTRA_TEXT, text);
     share.setPackage(WHATSAPP_PACKAGE_NAME);
+    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    context.startActivity(Intent.createChooser(share, "Share to"));
+  }
+
+  private void share(String text, String imagePath) {
+    final Context context = registrar.activeContext();
+    final File image = new File(imagePath);
+    Uri fileUri = FileProvider.getUriForFile(context, getFileProviderAuthority(context), image);
+    final Intent share = new Intent(Intent.ACTION_SEND);
+    share.setType("image/*");
+    share.putExtra(Intent.EXTRA_STREAM, fileUri);
+    share.putExtra(Intent.EXTRA_TEXT, text);
     share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     context.startActivity(Intent.createChooser(share, "Share to"));
   }

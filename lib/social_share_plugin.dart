@@ -34,4 +34,12 @@ class SocialSharePlugin {
     });
     return Future.value();
   }
+
+  static Future<void> share(String caption, String path) async {
+    await _channel.invokeMethod('share', <String, dynamic>{
+      'caption': caption,
+      'path': path,
+    });
+    return Future.value();
+  }
 }
