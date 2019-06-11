@@ -22,6 +22,7 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import android.widget.Toast;
 
 /**
  * SocialSharePlugin
@@ -78,6 +79,9 @@ public class SocialSharePlugin implements MethodCallHandler {
       result.success(null);
     } else if (call.method.equals("share")) {
       share(call.<String>argument("caption"), call.<String>argument("path"));
+      result.success(null);
+    } else if (call.method.equals("shareText")) {
+      shareText(call.<String>argument("caption"));
       result.success(null);
     } else {
       result.notImplemented();
@@ -144,6 +148,14 @@ public class SocialSharePlugin implements MethodCallHandler {
     share.putExtra(Intent.EXTRA_STREAM, fileUri);
     share.putExtra(Intent.EXTRA_TEXT, text);
     share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    context.startActivity(Intent.createChooser(share, "Share to"));
+  }
+
+  private void shareText(String text) {
+    final Context context = registrar.activeContext();
+    final Intent share = new Intent(Intent.ACTION_SEND);
+    share.setType("text/plain");
+    share.putExtra(Intent.EXTRA_TEXT, text);
     context.startActivity(Intent.createChooser(share, "Share to"));
   }
 
