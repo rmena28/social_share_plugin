@@ -55,7 +55,7 @@
           NSString *instagramLink = @"itms://itunes.apple.com/us/app/apple-store/id389801252?mt=8";
           [[UIApplication sharedApplication] openURL:[NSURL URLWithString:instagramLink]];
       }
-      
+
       result(nil);
   } else if ([@"shareToFeedFacebook" isEqualToString:call.method]) {
       NSURL *fbURL = [NSURL URLWithString:@"fbapi://"];
@@ -66,12 +66,56 @@
           NSString *fbLink = @"itms://itunes.apple.com/us/app/apple-store/id284882215?mt=8";
           [[UIApplication sharedApplication] openURL:[NSURL URLWithString:fbLink]];
       }
-      
+
+      result(nil);
+    } else if ([@"shareToWhatsapp" isEqualToString:call.method]) {
+        if (call.arguments[@"path"] != nil) {
+            [self share:call.arguments[@"caption"] path: call.arguments[@"path"]];
+            result(nil);
+            return;
+        }
+      NSURL *whatsappURL = [NSURL URLWithString:@"whatsapp://"];
+      if([[UIApplication sharedApplication] canOpenURL:whatsappURL]) {
+          [self whatsappShare:call.arguments[@"caption"]];
+          result(nil);
+      } else {
+          NSString *fbLink = @"itms://itunes.apple.com/us/app/apple-store/id310633997?mt=8";
+          [[UIApplication sharedApplication] openURL:[NSURL URLWithString:fbLink]];
+      }
+    } else if ([@"share" isEqualToString: call.method]) {
+      [self share:call.arguments[@"caption"] path: call.arguments[@"path"]];
+      result(nil);
+    } else if ([@"shareText" isEqualToString: call.method]) {
+      [self share:call.arguments[@"caption"] path: nil];
       result(nil);
   } else {
     result(FlutterMethodNotImplemented);
   }
 }
+
+- (void)share:(NSString*)caption  path:(NSString*) path {
+    NSMutableArray * shareItems = [[NSMutableArray alloc] init];
+    if (path != nil) {
+        [shareItems addObject: [NSURL URLWithString: path]];
+    }
+    if (caption != nil) {
+        [shareItems addObject: caption];
+    }
+
+    UIActivityViewController *activityViewController =
+    [[UIActivityViewController alloc] initWithActivityItems:shareItems
+                                      applicationActivities:nil];
+    [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:activityViewController
+                                                                                       animated:true
+                                                                                     completion:nil];
+}
+
+- (void)whatsappShare:(NSString*)caption {
+    NSString *string =[NSString stringWithFormat:@"whatsapp://send?text=%@", [caption stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
+    NSURL *whatsappURL = [NSURL URLWithString: string];
+    [[UIApplication sharedApplication] openURL: whatsappURL];
+}
+
 
 - (void)facebookShare:(NSString*)imagePath {
     //NSURL* path = [[NSURL alloc] initWithString:call.arguments[@"path"]];
