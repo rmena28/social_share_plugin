@@ -94,20 +94,32 @@
 }
 
 - (void)share:(NSString*)caption  path:(NSString*) path {
-    NSMutableArray * shareItems = [[NSMutableArray alloc] init];
-    if (path != nil) {
-        [shareItems addObject: [NSURL URLWithString: path]];
-    }
-    if (caption != nil) {
-        [shareItems addObject: caption];
-    }
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSMutableArray * shareItems = [[NSMutableArray alloc] init];
+        if (path != nil) {
+            NSURL *url = [NSURL URLWithString:path];
+            if ([@[@"png", @"jpg", @"jpeg", @"gif"] containsObject:path.pathExtension]) {
+                NSData *data = [NSData dataWithContentsOfURL:url];
+                UIImage* image = [[UIImage alloc]initWithData:data];
+                [shareItems addObject: image];
+            } else {
+                [shareItems addObject: url];
+            }
+        }
+        if (caption != nil && caption.length > 0) {
+            [shareItems addObject: caption];
+        }
 
-    UIActivityViewController *activityViewController =
-    [[UIActivityViewController alloc] initWithActivityItems:shareItems
-                                      applicationActivities:nil];
-    [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:activityViewController
-                                                                                       animated:true
-                                                                                     completion:nil];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIActivityViewController *activityViewController =
+            [[UIActivityViewController alloc] initWithActivityItems:shareItems
+                                              applicationActivities:nil];
+            [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:activityViewController
+                                                                                               animated:true
+                                                                                             completion:nil];
+        });
+    });
+
 }
 
 - (void)whatsappShare:(NSString*)caption {
