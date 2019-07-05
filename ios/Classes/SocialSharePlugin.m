@@ -99,7 +99,13 @@
         if (path != nil) {
             NSURL *url = [NSURL URLWithString:path];
             if ([@[@"png", @"jpg", @"jpeg", @"gif"] containsObject:path.pathExtension]) {
-                UIImage * image = [[UIImage alloc] initWithContentsOfFile:path];
+                UIImage * image;
+                if ([url.scheme containsString:@"http"]) {
+                    NSData *data = [NSData dataWithContentsOfURL:url];
+                    image = [[UIImage alloc] initWithData:data];
+                } else if ([url.scheme containsString:@"file"]) {
+                    image = [[UIImage alloc] initWithContentsOfFile:path];
+                }
                 if (image != nil) {
                     [shareItems addObject: image];
                 } else {
